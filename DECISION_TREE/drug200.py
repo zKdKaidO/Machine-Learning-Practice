@@ -24,17 +24,33 @@ X_train = df[['Age', 'Sex', 'BP', 'Cholesterol', 'Na_to_K']]
 y = df['Drug']
 
 kf = KFold(n_splits=5, shuffle=True, random_state=42)
-clf = DecisionTreeClassifier(criterion='gini', max_depth=4, random_state=42)
+clf_gini = DecisionTreeClassifier(criterion='gini', max_depth=4, random_state=42)
+clf_entropy = DecisionTreeClassifier(criterion='entropy', max_depth=4, random_state=42)
 
-scores = cross_val_score(clf, X_train, y, cv=kf, scoring='accuracy')
+scores_gini = cross_val_score(clf_gini, X_train, y, cv=kf, scoring='accuracy')
+scores_entropy = cross_val_score(clf_entropy, X_train, y, cv=kf, scoring='accuracy')
 
-print("--- RESULT K-FOLD (k=5) ---")
-print(f"Scores for each time: {scores}")
-print(f"Mean score: {scores.mean() * 100:.2f}%")
-print(f"Standard Deviation: {scores.std():.4f}")
+print("--- RESULT K-FOLD (k=5) WITH GINI ---")
+print(f"Scores for each time: {scores_gini}")
+print(f"Mean score: {scores_gini.mean() * 100:.2f}%")
+print(f"Standard Deviation: {scores_gini.std():.4f}")
 
-
-
+"""
+--- RESULT K-FOLD (k=5) WITH GINI ---
+Scores for each time: [1.    1.    0.975 0.975 1.   ]
+Mean score: 99.00%
+Standard Deviation: 0.0122
+"""
+print("--- RESULT K-FOLD (k=5) WITH ENTROPY ---")
+print(f"Scores for each time: {scores_entropy}")
+print(f"Mean score: {scores_entropy.mean() * 100:.2f}%")
+print(f"Standard Deviation: {scores_entropy.std():.4f}")
+"""
+--- RESULT K-FOLD (k=5) WITH ENTROPY ---
+Scores for each time: [1.    1.    0.975 0.975 1.   ]
+Mean score: 99.00%
+Standard Deviation: 0.0122
+"""
 
 
 
