@@ -5,19 +5,18 @@ from sklearn.preprocessing import MultiLabelBinarizer
 from sklearn.model_selection import KFold, cross_val_score
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import accuracy_score
-import matplotlib.pyplot as plt
 import numpy as np
 
 # TỪ NHỮNG THÔNG TIN TRONG CSV, SỬ DỤNG DECISION TREE ĐỂ DỰ ĐOÁN XEM BỘ PHIM CÓ THÀNH CÔNG HAY KHÔNG
-url = "A:\\Machine-Learning-Practice\\DECISION_TREE\\movie_success_rate.csv"
+url = "D:\AI\Machine-Learning-Practice\DECISION_TREE\movie_success_rate.csv"
 df = pd.read_csv(url)
 features = [col for col in df.columns]
 print(df.dtypes)
 # ==============================================================================
-# BƯỚC QUAN TRỌNG: LÀM SẠCH DỮ LIỆU (DATA CLEANING)
+# BƯỚC 1: LÀM SẠCH DỮ LIỆU (DATA CLEANING)
 # ==============================================================================
 
-# 1. Xử lý cột Target (Success) bị thiếu -> BẮT BUỘC PHẢI XÓA DÒNG ĐÓ
+# 1. Xử lý cột Target (Success) bị thiếu -> XÓA DÒNG ĐÓ
 # Kiểm tra xem có bao nhiêu dòng bị thiếu Success
 missing_success = df['Success'].isnull().sum()
 if missing_success > 0:
@@ -25,7 +24,7 @@ if missing_success > 0:
     df = df.dropna(subset=['Success'])
 
 # 2. Xử lý các cột Features (Đặc trưng) bị thiếu (Revenue, Metascore...)
-# Với Decision Tree, ta có thể điền 0 hoặc trung bình. Ở đây mình điền trung bình (median) cho an toàn.
+# Với Decision Tree, ta có thể điền 0 hoặc trung bình -> điền trung bình (median)
 numeric_cols = df.select_dtypes(include=['float64', 'int64']).columns
 for col in numeric_cols:
     if col != 'Success': # Trừ cột target ra
@@ -38,7 +37,7 @@ for col in object_cols:
 
 print("Kích thước sau khi làm sạch:", df.shape)
 # ==============================================================================
-# XỬ LÝ MÃ HÓA (Encoding)
+# BƯỚC 2: XỬ LÝ MÃ HÓA (Encoding)
 # ==============================================================================
 features_to_LabelEncode = ['Title', 'Director']
 _le = {}
@@ -52,28 +51,38 @@ Như vậy ta ko thể dùng LabelEncoder để xử lí như những cái khác
 LabelEncoder biến những loại khác về các giá trị integer (Ví dụ: Title có: A, B và C -> LabelEncoder biến: A -> 1; B -> 2; C -> 3)
 Vậy thì với cột Actors: ta cần tên của mỗi actor sẽ đc biểu thị bằng 1 giá trị (vì 1 actor có quyền đóng nhiều phim) -> MultiLabelBinarizer
 """
+
+"""
+MultiLabelBinarizer
+Ví dụ: 1 phim có thể có nhiều thể loại: x = A, B, C,...
+-> tổng hợp tất cả thể loại: ['A' 'B' 'C' 'D' 'E']
+(nếu phim có thể loại nào thì là 1 ở vị trí đó, ko thì là 0)
+-> sau khi MLB: x = [1 1 1 0 0]
+"""
 features_to_MultiLabel = ['Genre', 'Actors']
 _mlb = {}
 for feature in features_to_MultiLabel:
     # df[feature] = [[Action,Adventure,Sci-Fi], [Adventure,Mystery,Sci-Fi],...] (for example)
-    df[feature] = df[feature].fillna("").apply(lambda x: [item.strip() for item in x.split(",")] if x else [])
+    df[feature] = df[feature].fillna("").apply(lambda x: [item.strip() for item in x.split(",")] if x else []) # strip() mặc định là space -> "  Hello" thành "Hello"
     mlb = MultiLabelBinarizer()
     df[feature] = mlb.fit_transform(df[feature])
     _mlb[feature] = mlb
 
 target = 'Success'
+# PHẦN EXCLUDE NÀY CÀNG NGÀY SẼ ĐƯỢC UPDATE THÊM SAU KHI CHẠY NHIỀU LẦN VÀ LOẠI BỎ NHỮNG THỨ ẢNH HƯỞNG LỚN TỚI SUCCESS QUÁ 
+# LÚC ĐÓ NÓ KO CÒN DỰ ĐOÁN NỮA MÀ CÓ THỂ LÀ HỌC VẸT (VÌ 1 FEATURE ẢNH HƯỞNG QUÁ nHIỀU TỚI KẾT QUẢ TARGET)
 exclude = [
-    'Description', 'Revenue (Millions)', 'Votes', 'Rating', 'Metascore', 'Rank', 'Runtime (Minutes)',
-    'Title', 'Director'
+    'Description', 'Revenue (Millions)', 'Votes', 'Rating', 'Metascore', 'Rank', 'Runtime (Minutes)', 'Title', 'Director'
 ]
-X_train = df.drop(columns=[target] + exclude)
+X = df.drop(columns=[target] + exclude)
 y = df[target]
 
 # Train 70%, Val 15%, Test 15%
+# BƯỚC ĐẦU CHIA TRAIN 70% -> 30% CÒN LẠI CHO TEMP
 X_train, X_temp, y_train, y_temp = train_test_split(
-    X_train, y, test_size=0.3, random_state=42, stratify=y
+    X, y, test_size=0.3, random_state=42, stratify=y
 )
-
+# 30% TEMP CÒN LẠI CHIA ĐÔI -> 15% CHO TEST VÀ 15% VAL
 X_val, X_test, y_val, y_test = train_test_split(
     X_temp, y_temp, test_size=0.5, random_state=42, stratify=y_temp
 )
@@ -100,15 +109,7 @@ feature_names = X_train.columns
 indices = np.argsort(importances)[::-1]
 
 # In ra Top 10 đặc trưng quan trọng nhất
-print("--- Top 10 đặc trưng quyết định kết quả ---")
+print("--- Top 10 đặc trưng quyết định kết quả (SẼ ĐƯỢC LOẠI TRỪ NẾU % QUÁ CAO) ---")
 for i in range(10):
     if i < len(indices):
         print(f"{i+1}. {feature_names[indices[i]]}: {importances[indices[i]]:.4f}")
-
-# Vẽ biểu đồ
-plt.figure(figsize=(10, 6))
-plt.title("Feature Importances")
-plt.bar(range(10), importances[indices[:10]], align="center")
-plt.xticks(range(10), feature_names[indices[:10]], rotation=90)
-plt.tight_layout()
-plt.show()
