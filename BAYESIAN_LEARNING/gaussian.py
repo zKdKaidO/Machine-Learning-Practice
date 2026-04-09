@@ -27,7 +27,23 @@ class GaussianNB:
             X_c = X[y==c]
             self.mean[idx, :] = np.mean(X_c, axis=0)
             self.var[idx, :] = np.mean(X_c, axis=0)
-            self.prior[idx] = X_c.shape[0] / float(X.shape[0])    
+            self.prior[idx] = X_c.shape[0] / float(X.shape[0])   
+
+    def _pdf(self, X_new, class_idx):
+        return np.exp(-(X_new - self.mean[class_idx, :])**2/(2*self.var[class_idx, :]**2)) / (np.sqrt(2 * np.pi * self.var[class_idx, :])) 
+
+    def predict(self, X_new):
+        # Calculate y_pred for X_new
+        y_pred = []
+        class_scores = []
+        for idx, c in enumerate(self.classes):
+            class_idx_point = np.log(self.prior(idx)) + np.log(np.sum(self._pdf(X_new, idx)))
+            class_scores.append(class_idx_point)
+        best_class_idx = np.argmax(class_scores)
+        y_pred.append(self.classes[best_class_idx])
+
+        return np.array(y_pred)
+
         
         
 
