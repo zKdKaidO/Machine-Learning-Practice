@@ -26,7 +26,7 @@ class GaussianNB:
         for idx, c in enumerate(self.classes):
             X_c = X[y==c]
             self.mean[idx, :] = np.mean(X_c, axis=0)
-            self.var[idx, :] = np.mean(X_c, axis=0)
+            self.var[idx, :] = np.var(X_c, axis=0)
             self.prior[idx] = X_c.shape[0] / float(X.shape[0])   
 
     def _pdf(self, X_new, class_idx):
