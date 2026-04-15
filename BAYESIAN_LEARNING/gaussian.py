@@ -30,17 +30,27 @@ class GaussianNB:
             self.prior[idx] = X_c.shape[0] / float(X.shape[0])   
 
     def _pdf(self, X_new, class_idx):
-        return np.exp(-(X_new - self.mean[class_idx, :])**2/(2*self.var[class_idx, :]**2)) / (np.sqrt(2 * np.pi * self.var[class_idx, :])) 
+        var = self.var[class_idx, :] + 1e-9
+        mean = self.mean[class_idx, :]
+        numerator = np.exp(-(X_new - mean)**2 / (2 * var))
+        denominator = (np.sqrt(2 * np.pi * var)) 
+        return numerator / denominator
 
     def predict(self, X_new):
         # Calculate y_pred for X_new
         y_pred = []
-        class_scores = []
-        for idx, c in enumerate(self.classes):
-            class_idx_point = np.log(self.prior(idx)) + np.log(np.sum(self._pdf(X_new, idx)))
-            class_scores.append(class_idx_point)
-        best_class_idx = np.argmax(class_scores)
-        y_pred.append(self.classes[best_class_idx])
+        
+        for x in X_new:
+            class_scores = []
+            for idx, c in enumerate(self.classes):
+                prior_log = np.log(self.prior[idx])
+                pdf_vals = self._pdf(x, idx)
+                likelihood_log = np.sum(np.log(pdf_vals + 1e-9))
+                class_idx_point = prior_log + likelihood_log
+                class_scores.append(class_idx_point)
+
+            best_class_idx = np.argmax(class_scores)
+            y_pred.append(self.classes[best_class_idx])
 
         return np.array(y_pred)
 

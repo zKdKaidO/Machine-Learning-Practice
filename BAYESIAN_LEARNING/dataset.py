@@ -37,17 +37,16 @@ class Dataset:
         else:
             raise ValueError(f"Unknown normalization type: {type}, type again with 'min-max' or 'z-score' only!")
         
-        def split_data(self, train_ratio=0.8, shuffle=True, seed=None):
-            N = self.X.shape[0]
-            N_train = int(N * train_ratio)
-            np.arange(N)
-            idx = np.random.permutation(N)
-            train_idx, test_idx = idx[:N_train], idx[N_train:]
-            X_train, y_train = self.X[train_idx], self.y[train_idx]
-            X_test,  y_test  = self.X[test_idx],  self.y[test_idx]
-            return X_train, y_train, X_test, y_test
+    def split_data(self, train_ratio=0.8, shuffle=True, seed=None):
+        N = self.X.shape[0]
+        N_train = int(N * train_ratio)
+        np.arange(N)
+        idx = np.random.permutation(N)
+        train_idx, test_idx = idx[:N_train], idx[N_train:]
+        X_train, y_train = self.X[train_idx], self.y[train_idx]
+        X_test,  y_test  = self.X[test_idx],  self.y[test_idx]
+        return X_train, X_test, y_train, y_test
     
-        def check_balance(self):
             
 
     
