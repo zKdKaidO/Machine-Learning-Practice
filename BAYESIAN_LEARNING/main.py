@@ -1,4 +1,11 @@
-from dataset import Dataset
+import sys
+import os
+
+current_dir = os.path.dirname(os.path.abspath(__file__))
+parent_dir = os.path.join(current_dir, '..')
+sys.path.append(parent_dir)
+
+from DATASET.dataset import Dataset
 from gaussian import GaussianNB
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import accuracy_score, confusion_matrix
