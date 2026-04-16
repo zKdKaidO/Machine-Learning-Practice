@@ -36,7 +36,7 @@ class GaussianNB:
         denominator = (np.sqrt(2 * np.pi * var)) 
         return numerator / denominator
 
-    def predict(self, X_new):
+    def predict(self, X_new, decision_rule="MAP"):
         # Calculate y_pred for X_new
         y_pred = []
         
@@ -46,9 +46,12 @@ class GaussianNB:
                 prior_log = np.log(self.prior[idx])
                 pdf_vals = self._pdf(x, idx)
                 likelihood_log = np.sum(np.log(pdf_vals + 1e-9))
-                class_idx_point = prior_log + likelihood_log
+                if decision_rule == "MAP":
+                    class_idx_point = prior_log + likelihood_log
+                elif decision_rule == "MLE":
+                    class_idx_point = likelihood_log
                 class_scores.append(class_idx_point)
-
+                
             best_class_idx = np.argmax(class_scores)
             y_pred.append(self.classes[best_class_idx])
 

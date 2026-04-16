@@ -13,7 +13,7 @@ from sklearn.naive_bayes import GaussianNB as SklearnNB
 
 if __name__ == "__main__":
     print("========== STEP 1: INPUT DATA ==========")
-    dataset_path = r"E:\HK252\ML\CODE\Machine-Learning-Practice\BAYESIAN_LEARNING\salmon_seabass.csv"
+    dataset_path = r"D:\AI\Machine-Learning-Practice\BAYESIAN_LEARNING\salmon_seabass.csv"
     df = Dataset(dataset_path)
     X, y = df.get_data()
 
@@ -28,20 +28,25 @@ if __name__ == "__main__":
     model_1d = GaussianNB()
     model_1d.fit(X_train_1d, y_train)
 
-    y_pred_1d = model_1d.predict(X_test_1d)
-    acc_1d = accuracy_score(y_test, y_pred_1d)
+    y_pred_1d_map = model_1d.predict(X_test_1d)
+    y_pred_1d_mle = model_1d.predict(X_test_1d, "MLE")
+    acc_1d_map = accuracy_score(y_test, y_pred_1d_map)
+    acc_1d_mle = accuracy_score(y_test, y_pred_1d_mle)
 
-    print(f"Accuracy (1 Feature - Chiều dài): {acc_1d * 100:.2f}%")
+    print(f"Accuracy (1 Feature): {acc_1d_map * 100:.2f}% (MAP) and {acc_1d_mle * 100:.2f}% (MLE)")
 
     print("========== EXERCISE 2: CLASSIFIER WITH 2 FEATURES ==========")
     # keep 2 features in csv
     model_2d = GaussianNB()
     model_2d.fit(X_train, y_train)
     
-    y_pred_2d = model_2d.predict(X_test)
-    acc_2d = accuracy_score(y_test, y_pred_2d)
+    y_pred_2d_map = model_2d.predict(X_test)
+    acc_2d_map = accuracy_score(y_test, y_pred_2d_map)
+
+    y_pred_2d_mle = model_2d.predict(X_test, "MLE")
+    acc_2d_mle = accuracy_score(y_test, y_pred_2d_mle)
     
-    print(f"Accuracy (2 Features): {acc_2d * 100:.2f}%")
+    print(f"Accuracy (2 Features): {acc_2d_map * 100:.2f}% (MAP) and {acc_2d_mle * 100:.2f}% (MLE)")
 
     print("========== EXERCISE 3: COMPARE WITH SKLEARN ==========")
     sklearn_model = SklearnNB()
@@ -51,9 +56,9 @@ if __name__ == "__main__":
     acc_sk = accuracy_score(y_test, y_pred_sk)
     
     print(f"Accuracy of Sklearn (2 Features):   {acc_sk * 100:.2f}%")
-    print(f"My Accuracy (2 Features):      {acc_2d * 100:.2f}%")
+    print(f"My Accuracy (2 Features): {acc_2d_map * 100:.2f}% (MAP) and {acc_2d_mle * 100:.2f}% (MLE)")
     
-    if acc_2d == acc_sk:
+    if acc_2d_map == acc_sk:
         print("They are the same!")
     else:
         print("There is a little bit different!")
